@@ -1,3 +1,4 @@
+#automation scripts
 #!/bin/bash
 
 
