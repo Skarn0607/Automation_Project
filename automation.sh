@@ -73,3 +73,36 @@ fi
 
 echo "Copy Tar file to S3 bucket" &&
 aws s3 cp /tmp/$mytar.tar s3://$s3_bucket/$mytar.tar
+
+#Step-7 Bookkeeping
+
+file_size=`ls -lah /tmp/$format_timestamp.tar |awk '{print $5}'`
+
+if[ !-f/var/www/html/inventory.html ];then
+
+    echo"creating the inventory file"&& 
+    touch /var/www/html/inventory.html &&
+    echo"cat /var/www/html/inventory.html">>/var/www/html/inventory.html &&
+    cat /var/www/html/inventory.html |awk '{print "\n""LogType\t\t""\t""DateCreated""\t\t""Type""\t\t""Size"}'>>/var/www/html/inventory.html
+
+fi
+
+    echo"appending in the inventory file"
+    cat /var/www/html/inventory.html |awk -v size=$file_size'{print $1="httpd-logs\t\t",$2=strftime("%d%m%Y-%H%M%S")"\t",$3="tar\t\t",$4=size}'|uniq >>/var/www/html/inventory.html
+
+#Step-8 cron job setup
+
+if[ !-f/etc/cron.d/automation ];then
+
+    echo"Cron Job Setup"&&
+    chmod +x /root/Automation_Project/automation.sh &&
+    sudo touch /etc/cron.d/automation &&
+    sudo echo"@daily root /root/Automation_Project/automation.sh">/etc/cron.d/automation &&
+    sudo chmod 600 /etc/cron.d/automation
+
+else
+
+    echo"Automation is setup"
+
+fi
+
